@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-ingress
+spec:
+  rules:
+  - http:
+      paths:
+      - pathType: Exact
+        path: "/"
+        backend:
+          service:
+            name: todo
+            port:
+              number: 8080
+      paths:
+      - pathType: Prefix
+        path: "/get"
+        backend:
+          service:
+            name: httpbin
+            port:
+              number: 8000
+      - pathType: Prefix
+        path: "/ip"
+        backend:
+          service:
+            name: httpbin
+            port:
+              number: 8000

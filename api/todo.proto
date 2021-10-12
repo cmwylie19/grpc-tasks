@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package todos;
+
+option go_package="/api";
+
+service Todo {
+    rpc GetTodo (GetTodoRequest) returns (GetTodoResponse) {}
+    rpc CreateTodo (CreateTodoRequest) returns (CreateTodoResponse) {}
+    rpc UpdateTodo (UpdateTodoRequest) returns (UpdateTodoResponse) {}
+    rpc DeleteTodo (DeleteTodoRequest) returns (DeleteTodoResponse) {}
+    rpc GetTodos (GetTodosRequest) returns (GetTodosResponse) {}
+    rpc GetTodosByUser (GetTodosByUserRequest) returns (GetTodosByUserResponse) {}
+    rpc DeleteTodosByUser (DeleteTodosByUserRequest) returns (DeleteTodosByUserResponse) {}
+}
+
+message DeleteTodosByUserRequest {
+    string author = 1;
+}
+message DeleteTodosByUserResponse {
+    string message = 1;
+}
+message GetTodosByUserRequest {
+    string author = 1;
+}
+
+message GetTodosByUserResponse {
+    repeated Task task = 1;
+}
+
+message Task {
+    string id = 1;
+    string name = 2;
+    string complete = 3;
+    string author = 4;
+}
+
+message CreateTodoRequest {
+    Task task = 1;
+}
+
+message CreateTodoResponse {
+    string message = 1;
+}
+
+message GetTodoRequest {
+    string id = 1;
+}
+
+message GetTodoResponse {
+    Task task = 1;
+}
+
+message UpdateTodoRequest {
+    string id = 1;
+    string complete = 3;
+}
+
+message UpdateTodoResponse {
+    string message = 1;
+}
+
+message DeleteTodoRequest {
+    string id  = 1;
+}
+
+message DeleteTodoResponse {
+    string message = 1;
+}
+
+message GetTodosRequest {}
+
+message GetTodosResponse {
+    repeated Task task = 1;
+}

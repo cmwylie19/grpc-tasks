@@ -1,0 +1,125 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: todo-db-pvc
+spec:
+  # storageClassName: generic
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500Mi
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: todo-db-pv
+  labels:
+    type: local
+spec:
+  # storageClassName: generic
+  claimRef:
+    namespace: default
+    name: todo-db-pvc
+  capacity:
+    storage: 500Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/var/lib/mongo"
+---
+apiVersion: apps/v1        
+kind: Deployment
+metadata:
+  labels:          
+    app: todo-db
+  name: todo-db 
+spec:         
+  replicas: 1    
+  selector: 
+    matchLabels:
+      app: todo-db
+  template:
+    metadata:
+      labels:
+        app: todo-db
+    spec:
+      containers:
+      - name: mongodb
+        volumeMounts:
+          - mountPath: /var/lib/mongo
+            name: mongo-todo-db
+        image: mongo:4.2
+        ports:
+        - containerPort: 27017
+      volumes:
+      - name: mongo-todo-db
+        persistentVolumeClaim:
+          claimName: todo-db-pvc
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: todo-db
+  name: todo-db
+spec:
+  ports:
+    - port: 27017
+      targetPort: 27017
+  selector:
+    app: todo-db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: todo
+  name: todo
+  namespace: default
+spec:
+  ports:
+    - port: 8080
+      name: http
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: todo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: todo
+    version: v1
+  name: todo
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: todo
+      version: v1
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: todo
+        version: v1
+    spec:
+      serviceAccountName: todo
+      containers:
+        - image: docker.io/cmwylie19/todo-knative:latest
+          name: todo
+          env:
+            - name: MONGO_URL
+              value: mongodb://todo-db:27017
+          ports:
+            - containerPort: 8080
+              name: http
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: todo

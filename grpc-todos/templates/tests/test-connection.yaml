@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "grpc-todos.fullname" . }}-test-connection"
+  labels:
+    {{- include "grpc-todos.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['{{ include "grpc-todos.fullname" . }}:{{ .Values.service.port }}']
+  restartPolicy: Never
